@@ -42,7 +42,7 @@ N_VAL = -1               # total val imgs, split equally across classes;  -1 = w
 RESOLUTION = 32           # set by init_train(resolution=...): 32 for CIFAR-100, 224 for full-res
 BATCH_SIZE = 256          # larger batch -> better GPU utilization at 64px (tiny activations)
 EPOCHS = 10 
-COMPILE_BLOCKS = True     # torch.compile each residual block (GPU only); set False to disable
+COMPILE_BLOCKS = False     # torch.compile each residual block (GPU only); set False to disable
 WARMUP_EPOCHS = 1
 LR = 1e-3                 # AdamW peak
 MIN_LR = 1e-5
