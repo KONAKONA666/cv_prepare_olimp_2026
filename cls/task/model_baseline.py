@@ -1,3 +1,17 @@
+"""
+32x32 tour — BASELINE: plain ResNet-18/34.
+
+The starting point of the modernization tour, run on CIFAR-100 at 32x32. Every
+experiment in this folder is measured against this model.
+
+32x32 note: these models are 32x32-only. The stem is a CIFAR-style stem -- a single
+3x3 stride-1 conv (no downsampling, no 7x7, no maxpool) -- so the feature map stays
+32, then goes 32 -> 16 -> 8 -> 4 through the stages (final 4x4). A strided or maxpool
+stem would over-downsample a 32px image to a degenerate 2x2 map.
+
+    from expirements.solution.model_baseline import model_baseline
+    model = model_baseline(size="resnet18")
+"""
 import torch
 import torch.nn as nn
 
@@ -20,12 +34,23 @@ class BasicBlock(nn.Module):
 
     def __init__(self, cin, cout, stride=1):
         super().__init__()
-        # TODO: build the block:
-        raise NotImplementedError("TODO: build BasicBlock")
+        self.conv1 = conv3x3(cin, cout, stride)
+        self.bn1 = nn.BatchNorm2d(cout)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(cout, cout)
+        self.bn2 = nn.BatchNorm2d(cout)
+        self.downsample = None
+        if stride != 1 or cin != cout:
+            self.downsample = nn.Sequential(
+                nn.Conv2d(cin, cout, 1, stride=stride, bias=False),
+                nn.BatchNorm2d(cout),
+            )
 
     def forward(self, x):
-        # TODO: 
-        raise NotImplementedError("TODO: BasicBlock.forward")
+        identity = x if self.downsample is None else self.downsample(x)
+        out = self.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        return self.relu(out + identity)
 
 
 class Net(nn.Module):
